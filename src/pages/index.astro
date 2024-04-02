@@ -262,7 +262,7 @@ import Layout from "../layouts/Layout.astro";
 					);
 				}
 			});
-			const entityID = `${form.ENTITY_TYPE.value}_${contador}`;
+			const entityID = `urn:ngsi-ld:${form.ENTITY_TYPE.value}:${contador}`;
 			jsonNGSI = {
 				id: entityID,
 				type: form.ENTITY_TYPE.value,
