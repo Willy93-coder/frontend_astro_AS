@@ -12,7 +12,7 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 
 <LayoutDataDiscover title="Descubrimiento de datos">
 	<main>
-		<h1>Gestión de datos</h1>
+		<h1>Descubrimiento y visualización de datos</h1>
 		<a class="block mb-2 text-blue-500" href="/">Tratamiento de datos</a>
 		<p class="errormsg"></p>
 		<div class="panel-container">
@@ -33,6 +33,7 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 						<tr class='even-row'>
 							<th>entityId</th>
 							<th>entityType</th>
+							<th>json data</th> <!-- "agnóstico" -->
 							<!-- Agrega las otras columnas aquí -->
 						</tr>
 					</thead>
@@ -49,8 +50,10 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 										value={entity.id}>
 											Eliminar entidad
 									</button>
-									{entity.id}</td>
+									{entity.id}
+								</td>
 								<td>{entity.type}</td>
+								<td>{JSON.stringify(entity)}</td> <!-- "agnóstico" -->
 							</tr>
 						)
 					)}
@@ -71,10 +74,11 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 						<tr class='even-row'>
 							<th>subscriptionID</th>
 							<th>description</th>
-							<th>status</th>
 							<th>url</th>
 							<th>lastNotification</th>
-							<th>timesSent</th>
+							<th>json data</th> <!-- "agnóstico" -->
+							<th>status</th>
+							<!--- <th>timesSent</th> -->
 							<!-- Agrega las otras columnas aquí -->
 						</tr>
 					</thead>
@@ -90,10 +94,11 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 									{subscription.id}
 								</td>
 								<td>{subscription.description}</td>
-								<td>{subscription.status}</td>
 								<td>{subscription.notification.http.url}</td>
 								<td>{subscription.notification.lastNotification}</td>
-								<td>{subscription.notification.timesSent}</td>
+								<td>{JSON.stringify(subscription)}</td> <!-- "agnóstico" -->
+								<td>{subscription.status}</td>
+								<!--- <td>{subscription.notification.timesSent}</td> -->
 								<!-- Agrega las otras columnas aquí -->
 							</tr>
 						)
