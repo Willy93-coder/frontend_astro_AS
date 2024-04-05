@@ -448,28 +448,6 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 		font-size: 16px;
 		line-height: 1.6;
 	}
-	.panel {
-		display: inline-block;
-	}
-	.panel-container {
-		display: flex;
-		justify-content: space-around; /* Center horizontally */
-		align-items: flex-start; /* Align panels to the top */
-	}
-	.left-panel {
-		height: 100%;
-		width: 100%;
-		min-width: 300px;
-		max-width: 700px;
-		background-color: #76dbdf75;
-	}
-	.right-panel {
-		width: 100%;
-		height: 100%;
-		min-width: 300px;
-		max-width: 1200px;
-		background-color: #417acf56;
-	}
 	h1 {
 		font-size: 2rem;
 		font-weight: 700;
@@ -495,6 +473,30 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 		border-radius: 5px;
 		font-size: 30px;
 		text-align: center;
+	}
+
+/* PANEL DE CADA TABLA */
+	.panel {
+		display: inline-block;
+	}
+	.panel-container {
+		display: flex;
+		justify-content: space-between; /* Center horizontally */
+		align-items: flex-start; /* Align panels to the top */
+	}
+	.left-panel {
+		height: 100%;
+		width: 100%;
+		min-width: 300px;
+		max-width: 700px;
+		background-color: #76dbdf75;
+	}
+	.right-panel {
+		width: 100%;
+		height: 100%;
+		min-width: 200px;
+		max-width: 900px;
+		background-color: #417acf56;
 	}
 
 /* INPUT */
