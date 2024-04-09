@@ -305,31 +305,29 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 
 	var valueNotificationWebhookUrl = protocolSpan.textContent + document.getElementsByClassName("valueNotificationWebhookUrl")[0].value;
 	const btnCreateSubs = document.querySelectorAll('.btnCreateSubscriptionClass');
-	
-	async function createSubscription(entity, all) {
+
+	// Escucha el evento input donde se introduce la notificación webhook URL
+	const inputNotificationWebhookUrl = document.querySelector('.valueNotificationWebhookUrl');
+	inputNotificationWebhookUrl.addEventListener('input', (event) => {
+		valueNotificationWebhookUrl = protocolSpan.textContent + event.target.value;
+		// console.log(valueNotificationWebhookUrl);
+	});
+
+	async function createSubscription(entity) {
 		// console.log("valueNotificationWebhookUrl:" + valueNotificationWebhookUrl);
 		const subscriptionPayload = {
-			description: (all) 
-				? `Notify me of all this entity type: '${entity.type}' status changes`
-				: `Notify me of all ${entity.id} status changes`,
+			description: `Notify me of all ${entity.id} status changes`,
 			subject: {
 				entities: [
-					(all) 
-					? 
-						{
-							idPattern: ".*",
-							type: entity.type 
-						}
-					:
-						{
-							id: entity.id,
-							type: entity.type
-						}
-					],
-					condition: {
-						attrs: [  ] // no hay nada dentro porque se subscribe a todos los atributos de esa tal entidad
-						// está comprobado de que se actualiza cuando algún atributo cambia su valor
+					{
+						id: entity.id,
+						type: entity.type
 					}
+				],
+				condition: {
+					attrs: [  ] // no hay nada dentro porque se subscribe a todos los atributos de esa tal entidad
+					// está comprobado de que se actualiza cuando algún atributo cambia su valor
+				}
 			},
 				notification: {
 					http: { url: valueNotificationWebhookUrl, }
@@ -361,7 +359,7 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 			
 			try {
 				console.log(`Starting... SELECTED ENTITY TO CREATE A NEW SUBSCRIPTION: ${selectedEntity}`);
-				const res = await createSubscription(selectedEntity, false);
+				const res = await createSubscription(selectedEntity);
 				if (res == null) return;
 				
 				if ( res.ok ) {
