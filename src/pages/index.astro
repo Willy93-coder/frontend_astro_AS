@@ -25,9 +25,9 @@ import Layout from "../layouts/Layout.astro";
             />
           </div>
           <button
-              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              id="searchBtn">Buscar</button
-            >
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            id="searchBtn">Buscar</button
+          >
         </form>
         <textarea
           class="block resize-none w-full h-full pl-2 text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -121,6 +121,7 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 <script>
   const URL = "http://localhost:3000/create-entity";
+  const URL_CRON = "http://localhost:3000/create-task-cron";
   const button = document.getElementById("searchBtn");
   const urlInput = document.getElementById("url");
   const apiInfo = document.getElementById("apiInfo");
@@ -163,40 +164,6 @@ import Layout from "../layouts/Layout.astro";
     apiInfo.value = JSON.stringify(info.DATA, null, 2);
   };
 
-  const createJsonNGSI = (form) => {
-    let contador = 1;
-    const jsonNGSI = {
-      id: `${form.ENTITY_TYPE.value}_${contador}`,
-      type: form.ENTITY_TYPE.value,
-    };
-    jsonNGSI[form.ATTR_NAME.value] = {
-      type: form.ATTR_TYPE.value,
-      value: form.ATTR_VALUE.value,
-    };
-    return jsonNGSI;
-  };
-
-  const obtainAttrValue = (json, attr) => {
-    if (
-      json.hasOwnProperty("results") &&
-      Array.isArray(json.results) &&
-      json.results.length > 0
-    ) {
-      const primerResultado = json.results[0];
-      if (primerResultado.hasOwnProperty(attr)) {
-        return primerResultado[attr];
-      } else {
-        console.error(
-          `El atributo "${attr}" no existe en el primer resultado.`
-        );
-        return null;
-      }
-    } else {
-      console.error("El JSON no contiene resultados válidos.");
-      return null;
-    }
-  };
-
   const obtainAttrValue_2 = (json, attr) => {
     if (json.hasOwnProperty(attr)) {
       if (json.hasOwnProperty(attr)) {
@@ -211,60 +178,6 @@ import Layout from "../layouts/Layout.astro";
       console.error("El JSON no contiene resultados válidos.");
       return null;
     }
-  };
-
-  const createJsonNGSI_2 = (form, originalJson) => {
-    const attr = obtainAttrValue(originalJson, form.ATTR_VALUE.value);
-    let jsonNGSI = {};
-    if (attr != null) {
-      let contador = 1;
-      jsonNGSI = {
-        id: `${form.ENTITY_TYPE.value}_${contador}`,
-        type: form.ENTITY_TYPE.value,
-      };
-      jsonNGSI[form.ATTR_NAME.value] = {
-        type: form.ATTR_TYPE.value,
-        value: attr,
-      };
-    }
-    return jsonNGSI;
-  };
-
-  const createJsonNGSI_3 = (form, originalJson) => {
-    const fields = document.querySelectorAll(".attr_input_container");
-
-    let jsonNGSI = {};
-    let contador = 1;
-
-    fields.forEach((fieldSet) => {
-      const attrNameInput = fieldSet.querySelector('[name="attrName"]').value;
-      const attrTypeInput = fieldSet.querySelector('[name="attrType"]').value;
-      const attrValueInput = fieldSet.querySelector('[name="attrValue"]').value;
-      const attrVal = obtainAttrValue(originalJson, attrValueInput);
-      if (attrVal !== null) {
-        const attrJson = {
-          type: attrTypeInput,
-          value: attrVal,
-        };
-
-        jsonNGSI[attrNameInput] = attrJson;
-      } else {
-        console.error(
-          `El atributo "${attrNameInput}" no existe en el JSON original.`
-        );
-      }
-    });
-
-    const entityID = `${form.ENTITY_TYPE.value}_${contador}`;
-    jsonNGSI = {
-      id: entityID,
-      type: form.ENTITY_TYPE.value,
-      ...jsonNGSI,
-    };
-
-    contador++;
-
-    return jsonNGSI;
   };
 
   const createJsonNGSI_4 = (form, originalJson) => {
@@ -306,7 +219,14 @@ import Layout from "../layouts/Layout.astro";
     return jsonNGSIArray;
   };
 
-  const sendNGSIJson = async (url = "", data = {}) => {
+  const jsonTaskCron = (url, jsonNGSI) => {
+    return {
+      url: url.value,
+      ngsi: jsonNGSI,
+    };
+  };
+
+  const sendJson = async (url = "", data = {}) => {
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -315,7 +235,7 @@ import Layout from "../layouts/Layout.astro";
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      const error = new Error("Error al enviar JSON a NGSI");
+      const error = new Error("Error al enviar JSON");
       error.stack = res.statusText;
       throw error;
     }
@@ -359,18 +279,31 @@ import Layout from "../layouts/Layout.astro";
   sendBtn.addEventListener("click", async (e) => {
     e.preventDefault();
     if (jsonNGSIArray != null) {
-      for (const entity of jsonNGSIArray) {
-        try {
-          const serverRes = await sendNGSIJson(URL, entity);
-          if (serverRes.status !== 201) {
-            console.error(`No se ha creado la entity con id: ${entity.id}`);
-            continue;
-          }
-          console.log(`Se ha creado la entity con id: ${entity.id}`);
-        } catch (error) {
-          console.error(error);
-        }
+      try {
+        const serverRes = await sendJson(
+          URL_CRON,
+          jsonTaskCron(urlInput, jsonNGSIArray)
+        );
+        if (serverRes.status !== 200)
+          console.error(serverRes.body);
+
+        if (serverRes.status === 200)
+          console.log("🚀 Se ha enviado el jsonTaskCron");
+      } catch (error) {
+        console.error(error);
       }
+      // for (const entity of jsonNGSIArray) {
+      //   try {
+      //     const serverRes = await sendJson(URL, entity);
+      //     if (serverRes.status !== 201) {
+      //       console.error(`No se ha creado la entity con id: ${entity.id}`);
+      //       continue;
+      //     }
+      //     console.log(`Se ha creado la entity con id: ${entity.id}`);
+      //   } catch (error) {
+      //     console.error(error);
+      //   }
+      // }
     }
   });
 </script>
