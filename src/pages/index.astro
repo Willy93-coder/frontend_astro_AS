@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const backendUrl = "localhost:3005";
 ---
 
 <Layout title="Dashboard">
@@ -10,6 +12,14 @@ import Layout from "../layouts/Layout.astro";
     <h1 class="text-5xl mb-2 mt-4">Tratamiento de datos</h1>
     <!-- Link -->
     <a class="block mb-2 text-blue-500" href="/subscriptions/">Suscripciones</a>
+    
+    <!-- INPUT BACKEND URL -->
+    <div class="input-group">
+      <h3>Backend URL:</h3>
+      <span class="protocol-backend-span">http://</span>
+      <input type="text" class="textbox-input" id="backendUrlInput" placeholder="Pon ip_or_domain:port_number" value={backendUrl}>
+    </div>
+  
     <!-- Container -->
     <div class="container flex justify-between pb-8">
       <!-- Form API container -->
@@ -120,7 +130,31 @@ import Layout from "../layouts/Layout.astro";
   </main>
 </Layout>
 <script>
-  const URL = "http://localhost:3000/create-entity";
+  /**********************/
+  /**** BACKEND SPAN ****/
+  /**********************/
+  var protocolBackendSpan = document.querySelector('.protocol-backend-span');   // http:// o https://
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Initial value
+    let protocolBackend = 'http://';
+    protocolBackendSpan.textContent = protocolBackend;
+
+    // Toggle protocol when clicked
+    protocolBackendSpan.addEventListener('click', function() {
+        protocolBackend = protocolBackend === 'http://' ? 'https://' : 'http://';
+        protocolBackendSpan.textContent = protocolBackend;
+    });
+  });
+
+  var backendURL = protocolBackendSpan.textContent + document.getElementById("backendUrlInput").value;
+  const dirCreateEntity = `create-entity`;
+  // Escucha el evento input donde se introduce la URL del Backend
+  const inputBackendUrl = document.getElementById("backendUrlInput");
+  inputBackendUrl.addEventListener('input', (event) => {
+    backendURL = protocolBackendSpan.textContent + event.target.value + "/" + dirCreateEntity;
+    // console.log(backendURL);
+  });
   const button = document.getElementById("searchBtn");
   const urlInput = document.getElementById("url");
   const apiInfo = document.getElementById("apiInfo");
@@ -361,7 +395,7 @@ import Layout from "../layouts/Layout.astro";
     if (jsonNGSIArray != null) {
       for (const entity of jsonNGSIArray) {
         try {
-          const serverRes = await sendNGSIJson(URL, entity);
+          const serverRes = await sendNGSIJson(backendURL, entity);
           if (serverRes.status !== 201) {
             console.error(`No se ha creado la entity con id: ${entity.id}`);
             continue;
@@ -374,3 +408,22 @@ import Layout from "../layouts/Layout.astro";
     }
   });
 </script>
+
+<style>
+/* INPUT */
+  .input-group {
+    display: flex;
+    align-items: center;
+  }
+
+  .input-group .protocol-backend-span {
+    padding: 8px;
+    border: 2px solid #007bff; /* Border color */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px;
+    color: #007bff; /* Text color */
+    background-color: #f8f9fa; /* Background color */
+    margin-right: 5px; /* Adjust as needed */
+    cursor: pointer; /* Cursor style */
+  }
+</style>

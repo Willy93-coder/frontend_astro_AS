@@ -7,6 +7,7 @@ const entities = await resEntities.json();
 const resSubscriptions = await fetch('http://www.anysolution.org:1027/v2/subscriptions/');
 const subscriptions = await resSubscriptions.json();
 
+const backendUrl = "localhost:3005";
 const notificationWebhookUrl = "192.168.1.74:5050";
 ---
 
@@ -15,7 +16,17 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 		<h1>Descubrimiento y visualización de datos</h1>
 		<a class="block mb-2 text-blue-500" href="/">Tratamiento de datos</a>
 		<p class="errormsg"></p>
+
+		<!-- INPUT BACKEND URL -->
+		<div class="input-group">
+			<h3>Backend URL:</h3>
+			<span class="protocol-backend-span">http://</span>
+			<input type="text" class="textbox-input" id="backendUrlInput" placeholder="Pon ip_or_domain:port_number" value={backendUrl}>
+		</div>
+
 		<div class="panel-container">
+			
+			<!-- PANEL ENTIDADES -->
 			<div class="panel left-panel">
 				<h2 style="text-align: center;">Entidades</h2>
 				<div class="entity-filter-buttons">
@@ -27,14 +38,14 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 
 				<!-- INPUTS SEARCH -->
 				<div class="input-group">
-					<input type="text" class="search-input" id="searchInputEntityId" placeholder="Buscar entityId...">
-					<input type="text" class="search-input" id="searchInputEntityType" placeholder="Buscar entityType...">
+					<input type="text" class="textbox-input" id="searchInputEntityId" placeholder="Buscar entityId...">
+					<input type="text" class="textbox-input" id="searchInputEntityType" placeholder="Buscar entityType...">
 				</div>
 
 				<!-- INPUT NOTIFICATION WEBHOOK URL -->
 				<div class="input-group">
 					<span>- Subscription notification webhook URL (Para cuando se crean las suscripciones): </span>
-					<span class="protocol-span">http://</span>
+					<span class="protocol-subs-span">http://</span>
 					<input type="text" class="valueNotificationWebhookUrl" value={notificationWebhookUrl}>
 				</div>
 				<table class="entity-table">
@@ -69,6 +80,8 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 					</tbody>
 				</table>
 			</div>
+
+			<!-- PANEL SUSCRIPCIONES -->
 			<div class="panel right-panel">
 				<!-- <button class="subscription-toggleButton">Mostrar suscripciones</button> -->
 				<h2 style="text-align: center;">Suscripciones</h2>
@@ -81,7 +94,7 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 
 				<!-- INPUTS SEARCH -->
 				<div class="input-group">
-					<input type="text" class="search-input" id="searchInputSubsEntityId" placeholder="Buscar entityId...">
+					<input type="text" class="textbox-input" id="searchInputSubsEntityId" placeholder="Buscar entityId...">
 				</div>
 				<table class="subscription-table" style="overflow: hidden;">
 					<thead>
@@ -129,15 +142,21 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 	</main>
 </LayoutDataDiscover>
 <script>
-	const BACKEND_PORT = 3000;
-	const backendHostUrl = `http://localhost:${BACKEND_PORT}`;
 	let msgInfo = "hola";
 	const errormsg = document.getElementsByClassName('errormsg')[0];
-	var protocolSpan = document.querySelector('.protocol-span'); // http:// o https://
+	var protocolBackendSpan = document.querySelector('.protocol-backend-span');   // http:// o https://
+	var protocolSubscriptionSpan = document.querySelector('.protocol-subs-span'); // http:// o https://
 
-	/************************************************************************************/
-	/**** INPUTS: BUSCAR ENTIDAD(entityId, entityType), Y EN SUBSCRIPCION(entityId) *****/
-	/************************************************************************************/
+	/************************************************************************************************/
+	/**** INPUTS: BACKEND URL, BUSCAR ENTIDAD(entityId, entityType), Y EN SUBSCRIPCION(entityId) ****/
+	/************************************************************************************************/
+	var backendHostUrl = protocolBackendSpan.textContent + document.getElementById("backendUrlInput").value;
+	// Escucha el evento input donde se introduce la URL del Backend
+	const inputBackendUrl = document.getElementById("backendUrlInput");
+	inputBackendUrl.addEventListener('input', (event) => {
+		backendHostUrl = protocolBackendSpan.textContent + event.target.value;
+		// console.log(backendHostUrl);
+	});
 	document.getElementById("searchInputEntityId").addEventListener("input", function() {
 		var filter, table, tr, td, i, txtValue;
 		filter = this.value.toUpperCase();
@@ -184,19 +203,25 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 		}
 	});
 
-	/**************/
-	/**** SPAN ****/
-	/**************/
+	/*************************************/
+	/**** BACKEND Y SUBSCRIPTION SPAN ****/
+	/*************************************/
 	document.addEventListener('DOMContentLoaded', function() {
 
         // Initial value
-        let protocol = 'http://';
-        protocolSpan.textContent = protocol;
+        let protocolBackend = 'http://';
+        let protocolSubs = 'http://';
+        protocolSubscriptionSpan.textContent = protocolSubs;
+        protocolBackendSpan.textContent = protocolBackend;
 
         // Toggle protocol when clicked
-        protocolSpan.addEventListener('click', function() {
-            protocol = protocol === 'http://' ? 'https://' : 'http://';
-            protocolSpan.textContent = protocol;
+        protocolBackendSpan.addEventListener('click', function() {
+            protocolBackend = protocolBackend === 'http://' ? 'https://' : 'http://';
+            protocolBackendSpan.textContent = protocolBackend;
+        });
+        protocolSubscriptionSpan.addEventListener('click', function() {
+            protocolSubs = protocolSubs === 'http://' ? 'https://' : 'http://';
+            protocolSubscriptionSpan.textContent = protocolSubs;
         });
     });
 
@@ -369,13 +394,13 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 	const dirCreateSubs = `create-subscription`;
 	// const urlRegex = /^(https?:\/\/)?((([\da-z.-]+)\.([a-z.]{2,6}))|(([0-9]+(?:\.[0-9]+){3})))(?::([0-9]{2,5}))?(\/[\w.-]*)*\/?$/;
 
-	var valueNotificationWebhookUrl = protocolSpan.textContent + document.getElementsByClassName("valueNotificationWebhookUrl")[0].value;
+	var valueNotificationWebhookUrl = protocolSubscriptionSpan.textContent + document.getElementsByClassName("valueNotificationWebhookUrl")[0].value;
 	const btnCreateSubs = document.querySelectorAll('.btnCreateSubscriptionClass');
 
 	// Escucha el evento input donde se introduce la notificación webhook URL
 	const inputNotificationWebhookUrl = document.querySelector('.valueNotificationWebhookUrl');
 	inputNotificationWebhookUrl.addEventListener('input', (event) => {
-		valueNotificationWebhookUrl = protocolSpan.textContent + event.target.value;
+		valueNotificationWebhookUrl = protocolSubscriptionSpan.textContent + event.target.value;
 		// console.log(valueNotificationWebhookUrl);
 	});
 
@@ -569,7 +594,18 @@ const notificationWebhookUrl = "192.168.1.74:5050";
 		align-items: center;
 	}
 
-	.input-group .protocol-span {
+	.input-group .protocol-backend-span {
+		padding: 8px;
+		border: 2px solid #007bff; /* Border color */
+		border-radius: 5px; /* Rounded corners */
+		font-size: 16px;
+		color: #007bff; /* Text color */
+		background-color: #f8f9fa; /* Background color */
+		margin-right: 5px; /* Adjust as needed */
+		cursor: pointer; /* Cursor style */
+	}
+
+	.input-group .protocol-subs-span {
 		padding: 8px;
 		border: 2px solid #007bff; /* Border color */
 		border-radius: 5px; /* Rounded corners */
